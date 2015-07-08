@@ -164,7 +164,7 @@ public class MainActivity extends ActionBarActivity {
         int index = 0;
 
         for (int i = 1; i < 11; i++) {
-            numberArray[index++] = ' ' + i;
+            numberArray[index++] = "" + i;
         }
 
         try {
