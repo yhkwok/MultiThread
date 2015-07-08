@@ -20,10 +20,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +45,8 @@ public class MainActivity extends ActionBarActivity {
     private ProgressBar progressBar;
     private int progressStatus;
     private TextView status;
+
+    private int countLoadTime = 0;
 
     Handler loader = new Handler() {
         @Override
@@ -190,7 +195,18 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void load(View view) throws FileNotFoundException {
+        countLoadTime++;
+        loadList();
+        progressStatus = 0;
+        progressBar.setProgress(progressStatus);
 
+        Thread theThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                loadAndParse();
+            }
+        });
+        theThread.start();
         // ListView Item Click Listener
         /*listView.setOnItemClickListener(new OnItemClickListener() {
 
@@ -214,6 +230,45 @@ public class MainActivity extends ActionBarActivity {
         });*/
 
     }
+
+    public  void loadList() {
+        if (countLoadTime % 2 == 0)
+            numberAdapter = new ArrayAdapter<String>(this, R.layout.row, R.id.label, numberLoad);
+        else
+            numberAdapter = new ArrayAdapter<String>(this, R.layout.row_layout, R.id.textView1, numberLoad);
+        listView.setAdapter(numberAdapter);
+    }
+
+    public void loadAndParse{
+
+        try {
+            FileInputStream file = openFileInput(filename);
+            InputStreamReader input = new InputStreamReader(file);
+
+            BufferedReader br = new BufferedReader(input);
+            String receive = "";
+
+            String[] loadTheArray = new String[10];
+
+            int index = 0;
+
+            while ((receive = br.readLine()) != null){
+                numberLoad.add(receive);
+                progressStatus += 10;
+                loadHandler.sendEmptyMessage(0);
+                progressHandler.sendEmptyMessage(0);
+                Thread.sleep(250);
+            }
+            input.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e){
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 
 }
