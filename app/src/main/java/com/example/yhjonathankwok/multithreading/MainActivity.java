@@ -70,7 +70,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         //numberAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, numberLoad);
-        numberAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, numberLoad);
+        numberAdapter = new ArrayAdapter<String>(this, R.layout.row, R.id.label, numberLoad);
         listView = (ListView) findViewById(R.id.list);
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
