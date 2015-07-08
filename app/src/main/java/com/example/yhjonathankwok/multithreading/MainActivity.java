@@ -48,12 +48,12 @@ public class MainActivity extends ActionBarActivity {
 
     private int countLoadTime = 0;
 
-    Handler loader = new Handler() {
+    Handler loadHandler = new Handler() {
         @Override
         public void handleMessage (Message msg) { loadList(); }
     };
 
-    Handler progressHandler = new Handler() {
+    Handler progressEr = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             progressBar.setProgress(progressStatus);
@@ -179,7 +179,7 @@ public class MainActivity extends ActionBarActivity {
                 outWrite.write(numberArray[i]);
                 outWrite.write("\n");
                 progressStatus += 10;
-                progressHandler.sendEmptyMessage(0);
+                progressEr.sendEmptyMessage(0);
                 try {
                     Thread.sleep(250);
                 } catch (InterruptedException e) {
@@ -239,7 +239,7 @@ public class MainActivity extends ActionBarActivity {
         listView.setAdapter(numberAdapter);
     }
 
-    public void loadAndParse{
+    public void loadAndParse() {
 
         try {
             FileInputStream file = openFileInput(filename);
@@ -256,7 +256,7 @@ public class MainActivity extends ActionBarActivity {
                 numberLoad.add(receive);
                 progressStatus += 10;
                 loadHandler.sendEmptyMessage(0);
-                progressHandler.sendEmptyMessage(0);
+                progressEr.sendEmptyMessage(0);
                 Thread.sleep(250);
             }
             input.close();
@@ -269,6 +269,16 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+    public void clear (View view){
+        numberAdapter = null;
+        numberLoad.clear();
 
+        progressStatus = 0;
+        progressBar.setProgress(progressStatus);
+
+        status.setText(progressStatus + "/" + progressBar.getMax());
+
+        listView.setAdapter(numberAdapter);
+    }
 
 }
