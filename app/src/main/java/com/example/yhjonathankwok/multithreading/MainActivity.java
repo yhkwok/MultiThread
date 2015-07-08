@@ -2,6 +2,10 @@ package com.example.yhjonathankwok.multithreading;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -12,11 +16,15 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +37,28 @@ public class MainActivity extends ActionBarActivity {
     private String filename = "numbers.txt";
     private List<String> numberLoad = new ArrayList<String>();
     private ListView listView;
+    private FileOutputStream numberOut;
+
+    private ProgressBar progressBar;
+    private int progressStatus;
+    private TextView status;
+
+    Handler loader = new Handler() {
+        @Override
+        public void handleMessage (Message msg) { loadList(); }
+    };
+
+    Handler progressHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            progressBar.setProgress(progressStatus);
+            status.setText(progressStatus + "/" + progressBar.getMax());
+        }
+
+    };
+
+    Handler handler = new Handler();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,6 +67,12 @@ public class MainActivity extends ActionBarActivity {
         //numberAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, numberLoad);
         numberAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, numberLoad);
         listView = (ListView) findViewById(R.id.list);
+
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.getProgressDrawable().setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
+        progressStatus = 0;
+        progressBar.setProgress(0);
+        status = (TextView) findViewById(R.id.textView);
 
         /*
         listView = (ListView)findViewById(R.id.list);
@@ -81,9 +117,17 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void create(View view) throws InterruptedException {
+    public void create(View view) {
 
-        String string = null;
+        Thread theThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                createFile();
+                writeToFile();
+            }
+        });
+        theThread.start();
+        /*String string = null;
         for (int i = 1; i <= 10; i++) {
             string += i + '\n';
         }
@@ -103,11 +147,49 @@ public class MainActivity extends ActionBarActivity {
 
         Toast toast = Toast.makeText(context, text, duration);
         toast.show();
+
+        */
     }
 
+    public void createFile() {
+        try {
+            numberOut = openFileOutput(filename, MODE_PRIVATE);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void writeToFile() {
+        String[] numberArray = new String[10];
+        int index = 0;
+
+        for (int i = 1; i < 11; i++) {
+            numberArray[index++] = ' ' + i;
+        }
+
+        try {
+            OutputStreamWriter outWrite = new OutputStreamWriter(numberOut);
+
+            for (int i = 0; i < 10; i++) {
+                outWrite.write(numberArray[i]);
+                outWrite.write("\n");
+                progressStatus += 10;
+                progressHandler.sendEmptyMessage(0);
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            outWrite.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void load(View view) throws FileNotFoundException {
-
 
         // ListView Item Click Listener
         /*listView.setOnItemClickListener(new OnItemClickListener() {
